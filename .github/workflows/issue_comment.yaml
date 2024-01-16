@@ -1,16 +1,17 @@
-name: Create a comment on new issues
+name: Create a comment and react on new issues
 
 on:
   issues:
     types: [opened]
 
 jobs:
-  comment-with-action:
+  comment-and-react:
     runs-on: ubuntu-latest
     steps:
-      - name: "dump github context"
+      - name: "Dump GitHub context"
         run: echo '${{ toJSON(github.event) }}' | jq
         shell: bash
+
       - name: Create comment
         uses: peter-evans/create-or-update-comment@v1
         with:
@@ -21,3 +22,15 @@ jobs:
             - Created by [create-or-update-comment][1]
 
             [1]: https://github.com/peter-evans/create-or-update-comment
+
+      - name: Add reaction
+        uses: actions/github-script@v5
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.reactions.createForIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              content: '+1' // Available options: '+1', '-1', 'laugh', 'confused', 'heart', 'hooray', 'rocket', 'eyes'
+            })
