@@ -1,26 +1,23 @@
-name: Comment on PR or Issue
+name: Create a comment on new issues
 
 on:
-  issue_comment:
-    types: [created]
-  pull_request:
-    types: [opened, synchronize]
+  issues:
+    types: [opened]
 
 jobs:
-  comment:
+  comment-with-action:
     runs-on: ubuntu-latest
     steps:
-      - name: Add comment
+      - name: "dump github context"
+        run: echo '${{ toJSON(github.event) }}' | jq
+        shell: bash
+      - name: "Create comment"
         uses: actions/github-script@v5
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const issue_number = context.issue.number;
-            const issue_message = 'Thank you for your contribution!';
-            
             github.rest.issues.createComment({
+              issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: issue_number,
-              body: issue_message
-            });
+              body: 'Thank you for opening an issue. We will look into it as soon as possible.'
+            })
